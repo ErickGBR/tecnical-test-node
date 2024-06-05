@@ -1,0 +1,27 @@
+{
+  "name": "library-node",
+  "version": "1.0.0",
+  "description": "test backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testMatch": ["**/test/**/*.test.js"]
+  },
+  "keywords": [
+    "test",
+    "node",
+    "tecnical"
+  ],
+  "author": "Erick Burgos",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "sequelize": "^6.37.3",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
