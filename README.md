@@ -7,6 +7,7 @@ This project is a CRUD API built with Node.js and SQLite. It manages Authors and
 - [Installation](#installation)
 - [Usage](#usage)
 - [API Endpoints](#api-endpoints)
+  - [Database](#database)
   - [Authors](#authors)
   - [Books](#books)
 - [Running Tests](#running-tests)
@@ -38,6 +39,12 @@ This project is a CRUD API built with Node.js and SQLite. It manages Authors and
 
 ## API Endpoints
 
+### Database
+
+- **GET /api/v1/db/**: Retrieve the route to create database tables
+
+- **POST /initialize**: Initialize the database tables
+
 ### Authors
 
 - **GET /authors**: Get all authors
@@ -46,14 +53,16 @@ This project is a CRUD API built with Node.js and SQLite. It manages Authors and
   - Request body:
     ```json
     {
-      "name": "Author Name"
+      "name": "<STRING>",
+      "bio": "<STRING>"
     }
     ```
 - **PUT /authors/:id**: Update an author by ID
   - Request body:
     ```json
     {
-      "name": "Updated Author Name"
+      "name": "<STRING>",
+      "bio": "<STRING>"
     }
     ```
 - **DELETE /authors/:id**: Delete an author by ID
@@ -66,16 +75,18 @@ This project is a CRUD API built with Node.js and SQLite. It manages Authors and
   - Request body:
     ```json
     {
-      "title": "Book Title",
-      "authorId": 1
+      "title": "<STRING>",
+      "summary": "<STRING>",
+      "authId": <INTEGER>
     }
     ```
 - **PUT /books/:id**: Update a book by ID
   - Request body:
     ```json
     {
-      "title": "Updated Book Title",
-      "authorId": 1
+      "title": "<STRING>",
+      "summary": "<STRING>",
+      "authId": <INTEGER>
     }
     ```
 - **DELETE /books/:id**: Delete a book by ID

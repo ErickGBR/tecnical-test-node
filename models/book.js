@@ -12,6 +12,5 @@ const Book = sequelize.define('Book', {
   authId: DataTypes.INTEGER
 });
 
-
-
+  
 module.exports = Book
