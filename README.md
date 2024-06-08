@@ -43,8 +43,6 @@ This project is a CRUD API built with Node.js and SQLite. It manages Authors and
 
 - **GET /api/v1/db/**: Retrieve the route to create database tables
 
-- **POST /initialize**: Initialize the database tables
-
 ### Authors
 
 - **GET /authors**: Get all authors
