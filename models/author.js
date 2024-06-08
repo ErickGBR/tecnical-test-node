@@ -10,9 +10,5 @@ const Author = sequelize.define('Author', {
   bio: DataTypes.TEXT,
 });
 
-sequelize.sync({ force: true }).then(() => {
-    console.log("Create tables ");
-  });
-  
 module.exports = Author
 

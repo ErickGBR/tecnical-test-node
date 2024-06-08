@@ -1,181 +1,200 @@
 const { createBook, getBookById, getBooks, updateBook, deleteBook } = require('../controllers/bookController');
 const BookModel = require('../models/book');
-const sequelize = require('../config/database'); // Asegúrate de que este archivo exporte tu instancia de Sequelize
 
-jest.mock('../models/book'); // Mockea el modelo Book
+// Mock de la request y response de Express
+const mockRequest = (body, params) => ({
+    body,
+    params
+});
 
-// Desactiva los logs de Sequelize durante las pruebas
-console.log = jest.fn();
+const mockResponse = () => {
+    const res = {};
+    res.status = jest.fn().mockReturnValue(res);
+    res.send = jest.fn().mockReturnValue(res);
+    return res;
+};
+
+// Mock del modelo de libro
+jest.mock('../models/book', () => ({
+    create: jest.fn(),
+    findOne: jest.fn(),
+    findAll: jest.fn(),
+    update: jest.fn(),
+    destroy: jest.fn()
+}));
 
 describe('Book Controller', () => {
-  let req, res;
-
-  beforeAll(async () => {
-    await sequelize.sync({ force: true }); // Sincroniza las tablas antes de todas las pruebas
-  });
-
-  beforeEach(() => {
-    req = {};
-    res = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn()
-    };
-  });
-
-  afterAll(async () => {
-    await sequelize.close(); // Cierra la conexión de Sequelize después de todas las pruebas
-  });
-
-  describe('createBook', () => {
-    it('should create a new book and return status 200', async () => {
-      const payload = { title: 'Book Title', summary: 'Book Summary', authId: 1 };
-      req.body = payload;
-      BookModel.createBook.mockResolvedValue(payload);
-
-      await createBook(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.send).toHaveBeenCalledWith({
-        status: true,
-        message: 'Book is created ',
-        data: payload
-      });
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
-    it('should return status 500 if there is an error', async () => {
-      req.body = {};
-      BookModel.createBook.mockRejectedValue(new Error('Error'));
+    describe('createBook', () => {
+        it('should create a book', async () => {
+            const req = mockRequest({ title: 'Test Book', summary: 'Test Summary', authId: 1 });
+            const res = mockResponse();
+            const mockBook = { title: 'Test Book', summary: 'Test Summary', authId: 1 };
+            BookModel.create.mockResolvedValue(mockBook);
 
-      await createBook(req, res);
+            await createBook(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.send).toHaveBeenCalledWith({
-        status: false,
-        message: 'Cant create book',
-        error: expect.any(Error)
-      });
-    });
-  });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.send).toHaveBeenCalledWith({
+                status: true,
+                message: 'Book is created ',
+                data: mockBook
+            });
+        });
 
-  describe('getBookById', () => {
-    it('should get a book by ID and return status 200', async () => {
-      const book = { id: 1, title: 'Book Title', summary: 'Book Summary', authId: 1 };
-      req.params = { id: 1 };
-      BookModel.findOne.mockResolvedValue(book);
+        it('should handle error during book creation', async () => {
+            const req = mockRequest({ title: 'Test Book', summary: 'Test Summary', authId: 1 });
+            const res = mockResponse();
+            const errorMessage = 'Error during book creation';
+            BookModel.create.mockRejectedValue(new Error(errorMessage));
 
-      await getBookById(req, res);
+            await createBook(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.send).toHaveBeenCalledWith({
-        status: 200,
-        message: 'data by id',
-        data: book
-      });
-    });
-
-    it('should return status 500 if there is an error', async () => {
-      req.params = { id: 1 };
-      BookModel.findOne.mockRejectedValue(new Error('Error'));
-
-      await getBookById(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.send).toHaveBeenCalledWith({
-        status: false,
-        error: expect.any(Error)
-      });
-    });
-  });
-
-  describe('getBooks', () => {
-    it('should get all books and return status 200', async () => {
-      const books = [{ id: 1, title: 'Book Title', summary: 'Book Summary', authId: 1 }];
-      BookModel.findAll.mockResolvedValue(books);
-
-      await getBooks(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.send).toHaveBeenCalledWith({
-        status: true,
-        msg: 'all books',
-        getAllBooks: books
-      });
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.send).toHaveBeenCalledWith({
+                status: false,
+                message: 'Cant create book',
+                error: expect.any(Error)
+            });
+        });
     });
 
-    it('should return status 500 if there is an error', async () => {
-      BookModel.findAll.mockRejectedValue(new Error('Error'));
+    describe('getBookById', () => {
+        it('should get a book by ID', async () => {
+            const req = mockRequest({}, { id: 1 });
+            const res = mockResponse();
+            const mockBook = { id: 1, title: 'Test Book', summary: 'Test Summary', authId: 123 };
+            BookModel.findOne.mockResolvedValue(mockBook);
 
-      await getBooks(req, res);
+            await getBookById(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.send).toHaveBeenCalledWith({
-        status: false,
-        msg: 'Error to get',
-        error: expect.any(Error)
-      });
-    });
-  });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.send).toHaveBeenCalledWith({
+                status: 200,
+                message: 'data by id',
+                data: mockBook
+            });
+        });
 
-  describe('updateBook', () => {
-    it('should update a book and return status 200', async () => {
-      const payload = { title: 'Updated Book Title', summary: 'Updated Book Summary', authId: 1 };
-      req.params = { id: 1 };
-      req.body = payload;
-      const book = { id: 1, ...payload };
-      BookModel.findOne.mockResolvedValue(book);
-      BookModel.update.mockResolvedValue([1]); // Sequelize returns an array with the number of affected rows
+        it('should handle error during book retrieval by ID', async () => {
+            const req = mockRequest({}, { id: 1 });
+            const res = mockResponse();
+            const errorMessage = 'Error during book retrieval by ID';
+            BookModel.findOne.mockRejectedValue(new Error(errorMessage));
 
-      await updateBook(req, res);
+            await getBookById(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.send).toHaveBeenCalledWith({
-        status: true,
-        msg: 'Update data',
-        data: [1]
-      });
-    });
-
-    it('should return status 500 if there is an error', async () => {
-      req.params = { id: 1 };
-      req.body = {};
-      BookModel.findOne.mockRejectedValue(new Error('Error'));
-
-      await updateBook(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.send).toHaveBeenCalledWith({
-        status: false,
-        message: 'Cant update',
-        err: expect.any(Error)
-      });
-    });
-  });
-
-  describe('deleteBook', () => {
-    it('should delete a book and return status 200', async () => {
-      req.params = { id: 1 };
-      BookModel.destroy.mockResolvedValue(1); // Sequelize returns the number of affected rows
-
-      await deleteBook(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.send).toHaveBeenCalledWith({
-        status: true,
-        msg: 'delete book'
-      });
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.send).toHaveBeenCalledWith({
+                status: false,
+                error: expect.any(Error)
+            });
+        });
     });
 
-    it('should return status 500 if there is an error', async () => {
-      req.params = { id: 1 };
-      BookModel.destroy.mockRejectedValue(new Error('Error'));
+    describe('getBooks', () => {
+        it('should get all books', async () => {
+            const req = mockRequest();
+            const res = mockResponse();
+            const mockBooks = [{ id: 1, title: 'Test Book 1' }, { id: 2, title: 'Test Book 2' }];
+            BookModel.findAll.mockResolvedValue(mockBooks);
 
-      await deleteBook(req, res);
+            await getBooks(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.send).toHaveBeenCalledWith({
-        status: false,
-        msg: 'cant delete'
-      });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.send).toHaveBeenCalledWith({
+                status: true,
+                msg: 'all books',
+                getAllBooks: mockBooks
+            });
+        });
+
+        it('should handle error during book retrieval', async () => {
+            const req = mockRequest();
+            const res = mockResponse();
+            const errorMessage = 'Error during book retrieval';
+            BookModel.findAll.mockRejectedValue(new Error(errorMessage));
+
+            await getBooks(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.send).toHaveBeenCalledWith({
+                status: false,
+                msg: 'Error to get',
+                error: expect.any(Error)
+            });
+        });
     });
-  });
+
+    describe('updateBook', () => {
+        it('should update a book', async () => {
+            const req = mockRequest({ title: 'Updated Book Title', summary: 'Updated Summary', authId: 1 }, { id: 1 });
+            const res = mockResponse();
+            const mockBook = { title: 'Updated Book Title', summary: 'Updated Summary', authId: 1 };
+            BookModel.findOne.mockResolvedValue(mockBook);
+
+            await updateBook(req, res);
+
+            expect(BookModel.update).toHaveBeenCalledWith(
+                { title: 'Updated Book Title', summary: 'Updated Summary', authId: 1 },
+                { where: { id: 1 } }
+            );
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.send).toHaveBeenCalledWith({
+                status: true,
+                msg: 'Update data',
+                data: expect.anything()
+            });
+        });
+
+        it('should handle error during book update', async () => {
+            const req = mockRequest({ title: 'Updated Book Title', summary: 'Updated Summary', authId: 13 }, { id: "test" });
+            const res = mockResponse();
+            const errorMessage = 'Error during book update';
+            BookModel.findOne.mockRejectedValue(new Error(errorMessage));
+
+            await updateBook(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.send).toHaveBeenCalledWith({
+                status: false,
+                message: 'Cant update',
+                err: expect.any(Error)
+            });
+        });
+    });
+
+    describe('deleteBook', () => {
+        it('should delete a book', async () => {
+            const req = mockRequest({}, { id: 1 });
+            const res = mockResponse();
+
+            await deleteBook(req, res);
+
+            expect(BookModel.destroy).toHaveBeenCalledWith({ where: { id: 1 } });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.send).toHaveBeenCalledWith({
+                status: true,
+                msg: 'delete book'
+            });
+        });
+
+        it('should handle error during book deletion', async () => {
+            const req = mockRequest({}, { id: 1 });
+            const res = mockResponse();
+            const errorMessage = 'Error during book deletion';
+            BookModel.destroy.mockRejectedValue(new Error(errorMessage));
+
+            await deleteBook(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.send).toHaveBeenCalledWith({
+                status: false,
+                msg: 'cant delete'
+            });
+        });
+    });
 });

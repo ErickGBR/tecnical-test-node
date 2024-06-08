@@ -5,7 +5,7 @@ const createBook = async (req, res = response) => {
 
     try {
         const payload = req.body;
-        const book = await BookModel.createBook(payload);
+        const book = await BookModel.create(payload);
         res.status(200).send({
             status: true,
             message: "Book is created ",
@@ -62,25 +62,22 @@ const getBooks = async (req, res = response) => {
 const updateBook = async (req, res = response) => {
     try {
         const id = req.params.id;
-        const book = await BookModel.findOne({ id })
+        if(isNaN(id)) {
+            this.error("Not is a number")
+        }
+
         const payload = req.body;
-
-        book.title = payload.title;
-        book.summary = payload.summary;
-        book.authId = payload.authId;
-
-        const update = await BookModel.update(book, {
+        await BookModel.update(payload, {
             where: {
                 id
             }
         });
 
-        res.status(200).send({
+        return res.status(200).send({
             status: true,
             msg: "Update data",
-            data: update
+            data: payload
         })
-
 
     } catch (error) {
         return res.status(500).send({

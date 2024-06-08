@@ -4,10 +4,13 @@
   "description": "test backend",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "serve": "nodemon index,js"
   },
   "jest": {
-    "testMatch": ["**/test/**/*.test.js"]
+    "testMatch": [
+      "**/test/**/*.test.js"
+    ]
   },
   "keywords": [
     "test",
@@ -17,7 +20,9 @@
   "author": "Erick Burgos",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.19.2",
+    "nodemon": "^3.1.3",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7"
   },

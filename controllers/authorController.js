@@ -12,6 +12,7 @@ const createAuthor = async (req, res = response) => {
         })
 
     } catch (error) {
+        console.error(error);
         return res.status(500).send({
             status: false,
             msg: "Error when try create",
@@ -85,12 +86,17 @@ const updateAuthor = async (req, res = response) => {
 const deleteAuthor = async (req, res = response) => {
     try {
         const id = req.params.id;
-        await AuthorModel.destroy(id)
+        await AuthorModel.destroy({
+            where: {
+                id
+            }
+        })
         return res.status(200).send({
             status: true,
             msg: "Delete author"
         })
     } catch (error) {
+        console.log(error)
         return res.status(500).send({
             status: false,
             error
