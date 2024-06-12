@@ -33,7 +33,7 @@ This project is a CRUD API built with Node.js and SQLite. It manages Authors and
 
 1. Start the server:
    ```bash
-   npm start
+   npm run serve
    ```
    The server will start on `http://localhost:3000`.
 
